@@ -1,9 +1,11 @@
-function newImage() {
+function newImage() 
+{
 	var left = (screen.width/2) - 200;
 	var top = (screen.height/2) - 200;
 	window.open('newimage.php', 'image_start_window', 'width=400, height=400, toolbar=no, top='+top+', left='+left+'');
 }
-function popXML(str) {
+function popXML(str) 
+{
 	if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 		xmlhttp=new XMLHttpRequest();
 	}
@@ -18,7 +20,8 @@ function popXML(str) {
 	xmlhttp.open("GET","makeXML.php?q="+str,true);
 	xmlhttp.send();
 }
-function fileOP(str) {
+function fileOP(str) 
+{
 	if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 		xmlhttp=new XMLHttpRequest();
 	}
@@ -33,13 +36,24 @@ function fileOP(str) {
 	xmlhttp.open("GET","fileOP.php?q="+str,true);
 	xmlhttp.send();
 }
-function extract() {
+function extract() 
+{
 	var left = (screen.width/2) - 200;
 	var top = (screen.height/2) - 200;
 	var popup= window.open('extractdiag.php', 'image_start_window', 'width=0, height=0, toolbar=no, top='+top+', left='+left+'');
 }
 
+function tag() 
+{
+	
+}
 
 
-
-
+function tag(id)
+{ 
+var obj = document.getElementById("taglist").options[document.getElementById("taglist").selectedIndex].value;
+var left = (screen.width/2) - 200;
+	var top = (screen.height/2) - 200;
+	var popup= window.open('tag.php?q='+obj+'&z='+id, 'image_start_window', 'width=0, height=0, toolbar=no, top='+top+', left='+left+'');
+		popup.close();
+}

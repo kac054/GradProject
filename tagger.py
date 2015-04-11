@@ -8,21 +8,43 @@ if __name__=="__main__":
 	parser.add_argument('tag', metavar='tag', help='tag to add to files')
 	parser.add_argument('ids', nargs='+', help='ID\'s to add tags to')
 	args=parser.parse_args()
-	
+
 	save= args.filepath
 	save = save + "/tags.xml"
 	tmp = args.ids
-	
 	tree=ET.ElementTree(file=save)
-	xmlroot=tree.getroot()
+	root=tree.getroot()
 	for item in tmp:
-		for elem in tree.iter():
-			if (elem.id == item):
-				ET.SubElement(elem, "Tag").text = args.tag
-				
-#		doc = ET.SubElement(root, "fileobject")
-#		ET.SubElement(doc, "ID").text = item
-#		ET.SubElement(doc, "Tag").text = args.tag
+		fileexists=False
+		tagexists=False
+		for elem in root.iter('fileobject'):			
+			if(elem[0].text == item):
+				print "File exists, checking if wanted tag exists"
+				fileexists=True
+				for child in elem.iter('tag'):				
+					#if tag already exists, it is removed instead of added					
+					if(child.text == args.tag):
+						print "deleting tag"
+						elem.remove(child)
+						tagexists=True
+				if(tagexists==False):
+					#tag didnt exist, create it
+					print "creating new tag"
+					newtag = ET.Element("tag")
+					newtag.text= args.tag
+					elem.append(newtag)
+		if(fileexists==False):
+			#create fileobject for tagging
+			print "file didnt exist, creating object"	
+			fileelem= ET.Element("fileobject")
+			tmp=ET.Element("id")
+			tmp.text=item
+			fileelem.append(tmp)
+			tmp=ET.Element("tag")
+			tmp.text=args.tag
+			fileelem.append(tmp)
+			root.append(fileelem)
 
-#		tree = ET.ElementTree(root)
-#		tree.write(save)
+					
+	tree.write(save)				
+

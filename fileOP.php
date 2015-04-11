@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML>
    <HEAD>
-
+	<script type="text/javascript" src="script.js"></script>
    </HEAD>
 <BODY>
 <?php
@@ -47,10 +47,18 @@ while ($z->read() && $z->name !== 'fileobject');
 		$z->next('fileobject');
 	}
 
-?>
+echo "
 <br/>
-<input type="button" value="extract" onclick="extract();">
+<input type='button' value='extract' onclick='extract();'><br/>
+select a tag:
+<select id='taglist'>     
+<option value='review'>review</option>     
+<option value='important'>important</option>     
+<option value='useless'>useless</option>  
+</select> ";
 
+echo "<input type='button' value='Tag' onclick='tag($id) '>";
 
+?>
 </body>
 </html>
