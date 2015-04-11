@@ -66,6 +66,10 @@ def main(argv):
 	#create XML save names and start first fiwalk
 	primeXMLname=folder+"/primaryXML.xml"
 	secondXMLname=folder+"/secondaryXML.xml"
+	tagfile=folder+"/tags.xml"
+	root = ET.Element("root")
+	tree = ET.ElementTree(root)
+	tree.write(tagfile)
 	p= subprocess.Popen(["fiwalk -X "+str(primeXMLname)+" "+str(savepath)+""], shell=True)
 	time.sleep(10)
 

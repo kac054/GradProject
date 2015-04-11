@@ -1,24 +1,28 @@
-import dfxml,fiwalk
-import sys,os,os.path,datetime,getopt
+import argparse
+import xml.etree.cElementTree as ET
+import os.path
 
 if __name__=="__main__":
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.usage = '%prog [options] xmlfile fileid [x1 x2 x3]\nAdd tags x1, x2, x3 ... to xml object'
-    (options,args) = parser.parse_args()
+	parser = argparse.ArgumentParser(description="Add tag to a files XML")
+	parser.add_argument('filepath', metavar='filepath', help='folder path for evidence item')
+	parser.add_argument('tag', metavar='tag', help='tag to add to files')
+	parser.add_argument('ids', nargs='+', help='ID\'s to add tags to')
+	args=parser.parse_args()
+	
+	save= args.filepath
+	save = save + "/tags.xml"
+	tmp = args.ids
+	
+	tree=ET.ElementTree(file=save)
+	xmlroot=tree.getroot()
+	for item in tmp:
+		for elem in tree.iter():
+			if (elem.id == item):
+				ET.SubElement(elem, "Tag").text = args.tag
+				
+#		doc = ET.SubElement(root, "fileobject")
+#		ET.SubElement(doc, "ID").text = item
+#		ET.SubElement(doc, "Tag").text = args.tag
 
-	if len(args)<3:
-		parser.print_help()
-		exit(1)
-	    
-
-	tags = set([fn.lower() for fn in args[2:]])
-
-
-	f = open("/var/www/html/Cases/Case1/Dropbox/primaryXML.xml")
-	(doc,fobjs) = fiwalk.fileobjects_using_dom(xmlfile=f)
-	for fi in fobjs:
-		if (fi.id() in targets):
-			print fi.filename()
-
-
+#		tree = ET.ElementTree(root)
+#		tree.write(save)
