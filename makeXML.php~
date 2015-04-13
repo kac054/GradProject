@@ -87,18 +87,16 @@ function str_startswith($source, $prefix)
 {
    return strncmp($source, $prefix, strlen($prefix)) == 0;
 }
-
-#beginning of page
 #setup filepath variable using GET
-$filter="";
 $tmp=$_GET["q"];
 $path="/var/www/html/Cases/";
 $path.=$tmp;
+$filter=$_GET["z"];
 $_SESSION['imagepath']=$path;
 $path.="/primaryXML.xml";
 $string='<filename>';
-
 #open file
+
 $z = new XMLReader;
 $z->open($path);
 $doc = new DOMDocument;
@@ -106,22 +104,27 @@ $_SESSION['path']=$path;
 session_write_close();
 
 #setup filter xml reader
+$xmlpath= $_SESSION['imagepath'];
+$xmlpath.="/tags.xml";
 
+$tagxml = new XMLReader;
+$tagxml->open($xmlpath);
+$doc2= new DomDocument;
 #filter dropdown choices, filters hardcoded for now
-echo"
+echo"$filter
 <select id='filter'>  
 <option value=''>none</option>   
 <option value='review'>review</option>     
 <option value='important'>important</option>     
 <option value='useless'>useless</option>  
 </select>";
-echo "<input type='button' value='filter' onclick=filtertest('$tmp') >";
+echo "<input type='button' value='Tag' onclick=popXML('$tmp') >";
 
 #begin making XML list
 echo "<ul class='dir'>";
 // move to the first <product /> node
 while ($z->read() && $z->name !== 'fileobject');
-
+while ($tagxml->read() && $tagxml->name !== 'fileobject');
 // now that we're at the right depth, hop to the next <product/> until the end of the tree
 while ($z->name === 'fileobject')
 {
@@ -136,9 +139,27 @@ while ($z->name === 'fileobject')
 	}
 	elseif($node->name_type =='r' && strpos($node->filename, '/')==false  && $node->unalloc !=1)
 	{
-		
+		if($filter == '')
+		{
 			$tmp=$node->id;
-			echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";		
+			echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+		}
+		else
+		{
+			while ($tagxml->name === 'fileobject')
+			{
+				echo"filtertest";
+				$node2 = simplexml_import_dom($doc2->importNode($tagxml->expand(), true));
+				
+				if($node2->tag == $filter)
+				{
+					echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+				}
+				
+			}
+
+		}
+			
 		
 	}
 
@@ -150,6 +171,12 @@ echo "</ul>";
 
 //close php
 ?>
+
+<script> 
+$('.dir ul').hide();
+$('.list').click(function() {
+    $(this).find('ul').slideToggle();
+    });</script>
 </body></html>
 
 

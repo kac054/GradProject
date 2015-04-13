@@ -21,12 +21,14 @@ if __name__=="__main__":
 			if(elem[0].text == item):
 				print "File exists, checking if wanted tag exists"
 				fileexists=True
-				for child in elem.iter('tag'):				
-					#if tag already exists, it is removed instead of added					
+				for child in elem.iter('tag'):
 					if(child.text == args.tag):
-						print "deleting tag"
-						elem.remove(child)
+						#tag was present, remove and prevent readding
+						print "tag exists, removing"
 						tagexists=True
+						elem.remove(child)
+					else:
+						elem.remove(child)
 				if(tagexists==False):
 					#tag didnt exist, create it
 					print "creating new tag"

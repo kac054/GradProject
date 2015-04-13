@@ -17,7 +17,13 @@ function popXML(str)
 			document.getElementById("XMLholder").innerHTML=xmlhttp.responseText;
 		}
 	}
-	 xmlhttp.open("GET","makeXML.php?q="+str,true);
+	try{
+		var obj = document.getElementById("filter").options[document.getElementById("filter").selectedIndex].value;
+	}
+	catch(err){
+		obj="";
+	}
+	xmlhttp.open("GET","makeXML.php?q=",true);
 	xmlhttp.send();
 }
 function fileOP(str) 
@@ -52,30 +58,3 @@ function tag(id)
 	popup.close();
 }
 
-function filtertest(tmp)
-{
-	var obj = document.getElementById("filter").options[document.getElementById("filter").selectedIndex].value;
-//if statement works, else doesnt	
-	if(obj.trim() == '') popXML(tmp);
-	else
-	{
-		popfilter(tmp);
-	}
-}
-function popfilter(str) 
-{
-	if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-		xmlhttp=new XMLHttpRequest();
-	}
-	else {// code for IE6, IE5
-		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-	}
-	xmlhttp.onreadystatechange=function() {
-		if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-			document.getElementById("XMLholder").innerHTML=xmlhttp.responseText;
-		}
-	}
-	var obj = document.getElementById("filter").options[document.getElementById("filter").selectedIndex].value;
-	xmlhttp.open("GET","filtermakexml.php?q="+str+"&z="+obj,true);
-	xmlhttp.send();
-}
