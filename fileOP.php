@@ -14,7 +14,6 @@ $path= $_SESSION['path'];
 $z = new XMLReader;
 $z->open($path);
 $doc = new DOMDocument;
-
 // move to the first <product /> node
 while ($z->read() && $z->name !== 'fileobject');
 
@@ -43,6 +42,8 @@ while ($z->read() && $z->name !== 'fileobject');
 			echo "Access:".$tmp[0]." ".$tmp[1];
 			echo "<br/>";
 			echo "md5:".$node->hashdigest;
+			echo "<br/>";
+			echo "ID:".$node->id;
 		}
 		$z->next('fileobject');
 	}

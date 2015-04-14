@@ -12,6 +12,58 @@ session_start();
 	</head>
 <body>
 <?php
+function file_find($string, $path, $tagar){
+	$z = new XMLReader;
+	$z->open($path);
+	$doc = new DOMDocument;
+
+	#xmlfilter setup
+	#setup filter xml reader
+	$xmlpath= $_SESSION['imagepath'];
+	$xmlpath.="/tags.xml";
+	$tagxml = new XMLReader;
+	$tagxml->open($xmlpath);
+	$doc2= new DomDocument;
+	echo "<ul class='dir'>";
+	// move to the first <product /> node
+	while ($z->read() && $z->name !== 'fileobject');
+	while ($tagxml->read() && $tagxml->name !== 'fileobject');
+	// now that we're at the right depth, hop to the next <product/> until the end of the tree
+	while ($z->name === 'fileobject')
+	{	
+		$node = simplexml_import_dom($doc->importNode($z->expand(), true));
+	    // now you can use $node without going insane about parsing
+		#$test= explode('/',$node->filename);
+		#$test= array_slice($test, 0, $GLOBALS['depth']);
+		$dir=pathinfo($node->filename, PATHINFO_DIRNAME);	
+		#$temp= explode('/', $dir);
+		if ($node->name_type == 'd' && strpos($node->filename, '.') ==false && strcmp($dir, $string)==0)
+		{	
+			echo "<li class='list'><span>/".$node->filename."/</span>";
+
+			file_find($node->filename, $path, $tagar);
+			echo "</li>";
+		}
+		elseif($node->name_type =='r' && strcmp($dir, $string)==0 && $node->unalloc !=1)
+		{
+			while(current($tagar)!= False)
+			{
+				$tmp=$node->id;
+				if(strcmp(current($tagar),$tmp) ==0)
+				{
+					echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+				}
+				next($tagar);		
+			}
+		reset($tagar);
+		}
+				// go to next <product />
+		$z->next('fileobject');
+	}
+	echo "</ul>";
+}
+
+//page start
 $tmp=$_GET["q"];
 $filter=$_GET['z'];
 $path="/var/www/html/Cases/";
@@ -36,65 +88,68 @@ echo">important</option>
 if($filter=='useless') echo"selected='selected'";
 echo">useless</option>  
 </select>";
-echo "<input type='button' value='Tag' onclick=filtertest('$tmp') >";
+echo "<input type='button' value='Filter' onclick=filtertest('$tmp') >";
 
 
 $z = new XMLReader;
 $z->open($path);
+$doc = new DOMDocument;
 
-
-//$tagxml = new XMLReader;
-//$tagxml->open($xmlpath);
+//create array of id's that have the selected filter
+$tagar = array();
+$xmlpath= $_SESSION['imagepath'];
+$xmlpath.="/tags.xml";
 $doc2= new DomDocument;
+$tagxml = new XMLReader;
+$tagxml->open($xmlpath);
+while ($tagxml->read() && $tagxml->name !== 'fileobject');
+while($tagxml->name=='fileobject')
+{
+	$node = simplexml_import_dom($doc2->importNode($tagxml->expand(), true));
+	if($node->tag==$filter) 
+	{
+		array_push($tagar,$node->id);
+	
+	}
+	$tagxml->next('fileobject');
+}
 
 #begin making XML list
 echo "<ul class='dir'>";
 // move to the first <product /> node
 while ($z->read() && $z->name !== 'fileobject');
-/**
+
 // now that we're at the right depth, hop to the next <product/> until the end of the tree
 while ($z->name === 'fileobject')
 {
-	$tagxml = new XMLReader;
-	$tagxml->open($xmlpath);
-	while ($tagxml->read() && $tagxml->name !== 'fileobject');
+
 	$node = simplexml_import_dom($doc->importNode($z->expand(), true));
     // now you can use $node without going insane about parsing
 	$temp= explode('/', $node->filename);
 	if ($node->name_type == 'd' && strpos($node->filename, '.') ==false && sizeof($temp) ==1)
 	{	
 		echo "<li class='list'><span>/".$node->filename."/</span>";
-		file_find($node->filename, $path);
+		file_find($node->filename, $path, $tagar);
 		echo "</li>";
 	}
 	elseif($node->name_type =='r' && strpos($node->filename, '/')==false  && $node->unalloc !=1)
 	{
-		
+		while(current($tagar)!= False)
+		{
 			$tmp=$node->id;
-			echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";		
-		
+			if(strcmp(current($tagar),$tmp) ==0)
+			{
+				echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+			}
+			next($tagar);		
+		}
+		reset($tagar);
 	}
 
-    // go to next <product />
-    $z->next('fileobject');
+	// go to next <product />
+	$z->next('fileobject');
 }
 echo "</ul>";
-**/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ?>
 </body></html>

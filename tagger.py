@@ -18,7 +18,7 @@ if __name__=="__main__":
 		fileexists=False
 		tagexists=False
 		for elem in root.iter('fileobject'):			
-			if(elem[0].text == item):
+			if(elem.text == item):
 				print "File exists, checking if wanted tag exists"
 				fileexists=True
 				for child in elem.iter('tag'):
