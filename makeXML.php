@@ -8,7 +8,7 @@ session_start();
 	<HEAD>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-		<script type="text/javascript" src="script.js"></script>
+		<script type="text/javascript" src="script.js"></script>	
 	</head>
 <body>
 <?php
@@ -23,7 +23,7 @@ function get_string_between($string, $start, $end){
 
 #do a function for files and one for directories
 #will need to pass an int to signify how may tokens to pull off filename front for directory traversal
-function file_find($string, $path){
+function file_find($string, $path, $color){
 	$z = new XMLReader;
 	$z->open($path);
 	$doc = new DOMDocument;
@@ -53,29 +53,21 @@ function file_find($string, $path){
 		{	
 			echo "<li class='list'><span>/".$node->filename."/</span>";
 
-			file_find($node->filename, $path);
+			file_find($node->filename, $path, $color);
 			echo "</li>";
 		}
 		elseif($node->name_type =='r' && strcmp($dir, $string)==0 && $node->unalloc !=1)
 		{
-			if($filter == '')
+			$tmp=trim($node->id);
+			$file=explode('/', $node->filename);
+			if(trim($color[$tmp]) != null) #the file has a tag already, set li id
 			{
-				$tmp=$node->id;
-				echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+				$tmp2=trim($color[$tmp]);
+				echo "<li class='list' onclick=fileOP('$tmp') id='".$tmp2."'><span>".end($file)."</span></li>";
 			}
-			else
+			else	#file doesnt have tag
 			{
-				while ($tagxml->name === 'fileobject')
-				{
-					$node2 = simplexml_import_dom($doc2->importNode($tagxml->expand(), true));
-				
-					if($node2->tag == $filter)
-					{
-						echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
-					}
-				
-				}
-
+				echo "<li class='list' onclick=fileOP('$tmp')><span>".end($file)."</span></li>";
 			}
 		}
 				// go to next <product />
@@ -95,7 +87,7 @@ $tmp=$_GET["q"];
 $path="/var/www/html/Cases/";
 $path.=$tmp;
 $_SESSION['imagepath']=$path;
-$path.="/primaryXML.xml";
+$path.="/PrimaryXML.xml";
 $string='<filename>';
 
 #open file
@@ -108,7 +100,7 @@ session_write_close();
 #setup filter xml reader
 
 #filter dropdown choices, filters hardcoded for now
-echo"
+echo"<body>
 <select id='filter'>  
 <option value=''>none</option>   
 <option value='review'>review</option>     
@@ -117,6 +109,22 @@ echo"
 </select>";
 echo "<input type='button' value='filter' onclick=filtertest('$tmp') >";
 
+//create array of id's that have the selected filter
+$color= array();
+$xmlpath= $_SESSION['imagepath'];
+$xmlpath.="/tags.xml";
+$doc2= new DomDocument;
+$tagxml = new XMLReader;
+$tagxml->open($xmlpath);
+while ($tagxml->read() && $tagxml->name !== 'fileobject');
+while($tagxml->name=='fileobject')
+{
+	$node = simplexml_import_dom($doc2->importNode($tagxml->expand(), true));
+	$tmp=trim($node->id);
+	$tmp2=trim($node->tag);
+	$color[$tmp]=$tmp2;
+	$tagxml->next('fileobject');
+}
 #begin making XML list
 echo "<ul class='dir'>";
 // move to the first <product /> node
@@ -131,21 +139,27 @@ while ($z->name === 'fileobject')
 	if ($node->name_type == 'd' && strpos($node->filename, '.') ==false && sizeof($temp) ==1)
 	{	
 		echo "<li class='list'><span>/".$node->filename."/</span>";
-		file_find($node->filename, $path);
+		file_find($node->filename, $path, $color);
 		echo "</li>";
 	}
 	elseif($node->name_type =='r' && strpos($node->filename, '/')==false  && $node->unalloc !=1)
 	{
-		
-			$tmp=$node->id;
-			echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";		
-		
+			$tmp=trim($node->id);
+			if(trim($color[$tmp]) != null) #the file has a tag already, set li id
+			{
+				$tmp2=trim($color[$tmp]);
+				echo "<li class='list' onclick=fileOP('$tmp') id='".$tmp2."'><span>".$node->filename."</span></li>";
+			}
+			else	#file doesnt have tag
+			{
+				echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+			}		
 	}
 
     // go to next <product />
     $z->next('fileobject');
 }
-echo "</ul>";
+echo "</ul></body>";
 
 
 //close php

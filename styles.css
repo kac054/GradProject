@@ -1,17 +1,24 @@
+#leftside{
+	margin-right:auto;
+	float:left;
+	width:30%;
 
+}	
 #cases {
     
 	font-size:12pt;
 	border:1px solid black;
-	float:left;
-	width:40%;
-
-
+	float:top;
+	height:75%;
+}
+#caseinfo{
+	float:bottom;
 }
 #XMLholder  {
 	height:75%;
 	background-color:#b0c4de;
 	overflow:scroll;
+	cursor:pointer;
 
 }
 #entry {
@@ -22,7 +29,7 @@
 
 margin-left:auto;
 	float:right;
-	width:59%;
+	width:70%;
 
 }
 #Operations{
@@ -31,12 +38,40 @@ margin-left:auto;
 	border:1px solid black;
 }
 
-.evidence .dir{
-list-style: square url("http://www.webbossuk.com/admin/images/reply-arrow.png");
-}
 #metadata{
 	float:top;
 	}
 #functions{
 	float:bottom;
 	}
+li#review { 
+    background-color: #ee7621; 
+}
+li#important { 
+    background-color: #8b0000;
+    color:white; 
+}
+li#useless { 
+    background-color: #8b8878; 
+}
+
+/*tree testing*/
+ul.dir, ul.dir ul, ul.dir li {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+ul.dir ul { padding-left: 0.3em; }
+ul.dir li {
+  border-left: 1px dotted #000;
+  padding-left: 13px;
+  background: url(dotted.gif) scroll no-repeat 1px 0.8em;
+}
+ul.dir li.last {
+  border-left-width: 0px;
+  padding-left: 14px;
+  background: url(dottedangle.gif) scroll no-repeat left top;
+}
+
+
+

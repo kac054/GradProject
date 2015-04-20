@@ -12,7 +12,7 @@ session_start();
 	</head>
 <body>
 <?php
-function file_find($string, $path, $tagar){
+function file_find($string, $path, $tagar, $color){
 	$z = new XMLReader;
 	$z->open($path);
 	$doc = new DOMDocument;
@@ -41,17 +41,19 @@ function file_find($string, $path, $tagar){
 		{	
 			echo "<li class='list'><span>/".$node->filename."/</span>";
 
-			file_find($node->filename, $path, $tagar);
+			file_find($node->filename, $path, $tagar, $color);
 			echo "</li>";
 		}
 		elseif($node->name_type =='r' && strcmp($dir, $string)==0 && $node->unalloc !=1)
 		{
 			while(current($tagar)!= False)
 			{
-				$tmp=$node->id;
+				$file=explode('/', $node->filename);
+				$tmp=trim($node->id);
 				if(strcmp(current($tagar),$tmp) ==0)
 				{
-					echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+					$tmp2=trim($color[$tmp]);
+					echo "<li class='list' onclick=fileOP('$tmp') id='".$tmp2."'><span>".end($file)."</span></li>";
 				}
 				next($tagar);		
 			}
@@ -69,7 +71,7 @@ $filter=$_GET['z'];
 $path="/var/www/html/Cases/";
 $path.=$tmp;
 $_SESSION['imagepath']=$path;
-$path.="/primaryXML.xml";
+$path.="/PrimaryXML.xml";
 $string='<filename>';
 
 echo"
@@ -97,6 +99,7 @@ $doc = new DOMDocument;
 
 //create array of id's that have the selected filter
 $tagar = array();
+$color = array();
 $xmlpath= $_SESSION['imagepath'];
 $xmlpath.="/tags.xml";
 $doc2= new DomDocument;
@@ -109,8 +112,11 @@ while($tagxml->name=='fileobject')
 	if($node->tag==$filter) 
 	{
 		array_push($tagar,$node->id);
-	
+		$tmp=trim($node->id);
+		$tmp2=trim($node->tag);
+		$color[$tmp]=$tmp2;
 	}
+	
 	$tagxml->next('fileobject');
 }
 
@@ -129,17 +135,18 @@ while ($z->name === 'fileobject')
 	if ($node->name_type == 'd' && strpos($node->filename, '.') ==false && sizeof($temp) ==1)
 	{	
 		echo "<li class='list'><span>/".$node->filename."/</span>";
-		file_find($node->filename, $path, $tagar);
+		file_find($node->filename, $path, $tagar, $color);
 		echo "</li>";
 	}
 	elseif($node->name_type =='r' && strpos($node->filename, '/')==false  && $node->unalloc !=1)
 	{
 		while(current($tagar)!= False)
 		{
-			$tmp=$node->id;
+			$tmp=trim($node->id);
 			if(strcmp(current($tagar),$tmp) ==0)
 			{
-				echo "<li class='list' onclick=fileOP('$tmp')><span>".$node->filename."</span></li>";
+				$tmp2=trim($color[$tmp]);
+				echo "<li class='list' onclick=fileOP('$tmp') id='".$tmp2."'><span>".$node->filename."</span></li>";
 			}
 			next($tagar);		
 		}

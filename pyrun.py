@@ -5,13 +5,14 @@ import os
 import signal
 import sys
 import getopt
-
+from time import gmtime, strftime
+import xml.etree.cElementTree as ET
 #handle arguments
 def main(argv):
 	disk = ''
 	savepath = ''
 	threads=0
-	case=''
+	folder=''
 	try:
 		opts, args = getopt.getopt(argv,"hi:o:t:f:",["disk=","save=", "thread=", "folder="])
 	except getopt.GetoptError:
@@ -60,48 +61,69 @@ def main(argv):
 		i = i+1
 	#last image started, finishes whatever is left in the image. allows for uneven distribution
 	lastimage= subprocess.Popen(["dd if="+str(disk)+" of="+str(savepath)+" bs=512 seek="+str(start)+" skip="+str(start)+" "], shell=True)
-
+	
+	casefile=folder+"/casefile.txt"
+	myfile=open(casefile, 'w')
+	myfile.write("image started at:"+strftime("%a, %d %b %Y %H:%M:%S", gmtime())+"")	
+	myfile.close()
 	time.sleep(20)
 
 	#create XML save names and start first fiwalk
-	primeXMLname=folder+"/primaryXML.xml"
-	secondXMLname=folder+"/secondaryXML.xml"
+	primeXMLname=folder+"/PrimaryXML.xml"
+	secondXMLname=folder+"/SecondaryXML.xml"
 	tagfile=folder+"/tags.xml"
 	root = ET.Element("root")
 	tree = ET.ElementTree(root)
 	tree.write(tagfile)
 	p= subprocess.Popen(["fiwalk -X "+str(primeXMLname)+" "+str(savepath)+""], shell=True)
+
 	time.sleep(10)
 
 	#redo later
 	#while first imager is still running, restart fiwalk every 20 seconds
-	while firstimage.poll() is None:
+	while firstimage.poll() is None:	
 		p.kill()
 	#if a second file is already created, make it primary and make new secondary	
-		if os.path.exists(case+"SecondaryXML.xml") ==True:		
-			os.rename(case+"SecondaryXML.xml",case+"PrimaryXML.xml")
+		if os.path.exists(folder+"/SecondaryXML.xml") ==True:		
+			os.rename(folder+"/SecondaryXML.xml",folder+"/PrimaryXML.xml")
+			p= subprocess.Popen(["fiwalk -X " +str(folder+"/SecondaryXML.xml")+" "+str(savepath)+""], shell=True)
+			print "replacing primary"
 	#if there is a primary but no secondary, dont remove secondary	
-		elif os.path.exists(case+"PrimaryXML.xml") ==True:			
-			p= subprocess.Popen(["fiwalk -X " +str(secondXMlname)+" "+str(savepath)+""], shell=True)
+		elif os.path.exists(folder+"/PrimaryXML.xml") ==True:			
+			p= subprocess.Popen(["fiwalk -X " +str(folder+"/SecondaryXML.xml")+" "+str(savepath)+""], shell=True)
+			print "no secondary present, making one."
 		time.sleep(20)
-#wait for last image pass to finish	
+#wait for last image pass to finish
+	print "waiting on final pass to finish"	
 	p.wait()
 #replace primary
-	os.remove(case+"PrimaryXML.xml")
-	os.rename(case+"SecondaryXML.xml",case+"PrimaryXML.xml")
-
-#final XML run over finished image
-	p= subprocess.Popen(["fiwalk -X " +str(secondXMlname)+" "+str(savepath)+""], shell=True)
-	p.wait()
-	os.rename(case+"SecondaryXML.xml",case+"PrimaryXML.xml")
-#attempt to close running processes, cleanup
+	print folder
+	os.remove(folder+"/PrimaryXML.xml")
+	os.rename(folder+"/SecondaryXML.xml",folder+"/PrimaryXML.xml")
+	#attempt to close running processes, cleanup
 	try:
-		p.kill()
 		firstimage.kill()
 		lastimage.kill()
 		image.kill()
 	except:
 		pass
+
+	md5chk=False
+	print "beginning md5sum"
+	dmd5= subprocess.check_output(["md5sum "+str(disk)+""], shell=True)
+	dmd5=dmd5.split()
+	print dmd5[0]
+	imd5= subprocess.check_output(["md5sum "+str(savepath)+""], shell=True)
+	imd5=imd5.split()
+	print imd5[0]
+	print "begin casefile"
+	if imd5[0]==dmd5[0]:
+		md5chk=True
+	casefile=folder+"/casefile.txt"
+	myfile=open(casefile, 'a')
+	myfile.write("\nimage completed at:"+strftime("%a, %d %b %Y %H:%M:%S", gmtime())+"\nMD5 check:"+str(md5chk)+"\nimage md5="+imd5[0]+"\ndrive md5="+dmd5[0]+"")	
+	myfile.close()
+	
 
 if __name__ == "__main__":
    main(sys.argv[1:])

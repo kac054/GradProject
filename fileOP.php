@@ -52,7 +52,8 @@ echo "
 <br/>
 <input type='button' value='extract' onclick='extract();'><br/>
 select a tag:
-<select id='taglist'>     
+<select id='taglist'>
+<option></option>     
 <option value='review'>review</option>     
 <option value='important'>important</option>     
 <option value='useless'>useless</option>  
